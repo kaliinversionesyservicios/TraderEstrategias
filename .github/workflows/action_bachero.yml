@@ -12,7 +12,7 @@ jobs:
       - name: Clonar repositorio
         uses: actions/checkout@v3
         with:
-          persist-credentials: false
+          token: ${{ secrets.GIT_ACTION }}
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
