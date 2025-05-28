@@ -1,0 +1,44 @@
+name: Run Data Historica Por Hora
+
+on:
+  schedule:
+    - cron: "0 12 * * *"  # Cada día a las 12:00 UTC
+  workflow_dispatch:      # Para ejecutarlo manualmente
+
+jobs:
+  ejecutar:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          persist-credentials: false
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: myenv
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Instalar dependencias y ejecutar notebook
+        shell: bash -l {0}
+        run: |
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill downloadDataHistYF_final_v1.ipynb /dev/null -k python3
+      
+      - name: subir cambios al repo
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+          git add .
+          git commit -m "Update data notebook"
+          git push 
