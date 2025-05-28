@@ -6,9 +6,8 @@ on:
   workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
-  ejecutar:
+  bachero:
     runs-on: ubuntu-latest
-
     steps:
       - name: Clonar repositorio
         uses: actions/checkout@v3
@@ -40,5 +39,5 @@ jobs:
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
           git add .
-          git commit -m "Update data notebook"
-          git push 
+          git commit -m "Update data notebook" || echo "No changes to commit"
+          git push origin HEAD:${{ github.ref }}
