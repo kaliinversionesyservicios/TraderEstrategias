@@ -60,6 +60,15 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
+      - name: sincronizar rama antes de ejecutar notebook
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+          git pull --rebase origin main
+
       - name: Install depedencias y Ejecutar Promedio Movil
         shell: bash -l {0}
         run: |
@@ -75,7 +84,6 @@ jobs:
         run: |
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
           git add .
           git commit -m "Update data notebook PM40" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref }}
@@ -117,6 +125,5 @@ jobs:
           git add .
           git commit -m "Update data notebook Rup. Canal Resistencia" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref }}
-
 
 
