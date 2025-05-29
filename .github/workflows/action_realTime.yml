@@ -10,12 +10,12 @@ jobs:
     steps:
       - name: Verificar periodo de ejecucion (6:00 - 20:00)
         run: |
-          HORA=$(date -u + "%H")
+          HORA=$(date -u +"%H")
            if [ "$HORA" -lt 6 ] || [ "$HORA" -gt 20 ]; then
             echo "Fuera de horario. Cancelando workflow."
             exit 0
           fi
-          
+
       - name: Clonar repositorio
         uses: actions/checkout@v3
         with:
