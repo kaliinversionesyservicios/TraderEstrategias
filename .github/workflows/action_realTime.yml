@@ -1,7 +1,7 @@
 name: Run Data Real-Time cada 15 minutos
 on:
   schedule:
-    - cron: "*/15 * * * *"  # Cada 15 minutos
+    - cron: "0 * * * *"  # Cada 15 minutos
   workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
