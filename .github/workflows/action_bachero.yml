@@ -68,15 +68,15 @@ jobs:
           python -m ipykernel install --user --name python3
           papermill PM40_PromedioMovil40_v1.ipynb /dev/null -k python3
 
-      - name: subir cambios al repo
+      - name: subir cambios al repositorio
         shell: bash -l {0}
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
           git add .
+          git pull --rebase origin main
           git commit -m "Update data notebook PM40" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref }}
 
@@ -113,8 +113,8 @@ jobs:
         run: |
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
           git add .
+          git pull --rebase origin main
           git commit -m "Update data notebook Rup. Canal Resistencia" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref }}
 
