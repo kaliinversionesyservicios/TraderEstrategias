@@ -60,11 +60,15 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Install Depedencies and Run Not. Promedio Movil
+      - name: Install depedencias and Run Promedio Movil
         shell: bash -l {0}
         run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential
+          sudo apt-get install -y libta-lib0 libta-lib0-dev
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
+          pip install TA-Lib
           python -m ipykernel install --user --name python3
           papermill PM40_PromedioMovil40_v1.ipynb /dev/null -k python3
 
