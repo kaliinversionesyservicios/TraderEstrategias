@@ -44,7 +44,7 @@ jobs:
 
   pm40:
     needs: bachero
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
@@ -58,12 +58,24 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Install depedencias and Run Promedio Movil
+      - name: Instalar dependencias del sistema y TA-Lib
         shell: bash -l {0}
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential
-          sudo apt-get install -y libta-lib0 libta-lib0-dev
+          sudo apt-get install -y build-essential wget
+
+          # Descargar y compilar TA-Lib
+          wget http://prdownloads.sourceforge.net/ta-lib/ta-lib-0.4.0-src.tar.gz
+          tar -xvzf ta-lib-0.4.0-src.tar.gz
+          cd ta-lib
+          ./configure --prefix=/usr
+          make
+          sudo make install
+          cd ..
+
+      - name: Install depedencias y Ejecutar Promedio Movil
+        shell: bash -l {0}
+        run: |
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           pip install TA-Lib
