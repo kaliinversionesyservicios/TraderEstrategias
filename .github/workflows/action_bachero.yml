@@ -42,11 +42,9 @@ jobs:
           git commit -m "Update data notebook" || echo "No changes to commit"
           git push origin HEAD:${{ github.ref }}
 
-
-
   pm40:
     needs: bachero
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
         with:
