@@ -43,7 +43,7 @@ jobs:
           git push origin HEAD:${{ github.ref }}
 
   prm40:
-    needs: bachero
+    needs: bacherooo
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
