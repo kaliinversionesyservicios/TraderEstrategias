@@ -36,7 +36,7 @@ jobs:
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
-          papermill downLoadDataRealtimeAlpha_final_v1.ipynb /dev/null -k python3
+          papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
       
       - name: subir cambios al repo
         shell: bash -l {0}
@@ -73,7 +73,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
-          papermill PM40_PromedioMovil40_v1.ipynb /dev/null -k python3
+          papermill PM40_PromedioMovil40.ipynb /dev/null -k python3
 
       - name: subir cambios al repositorio
         shell: bash -l {0}
@@ -120,7 +120,7 @@ jobs:
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
-          papermill BreakOut_Indicator_v1.ipynb /dev/null -k python3
+          papermill BreakOut_Indicator.ipynb /dev/null -k python3
         
       - name: subir cambios al repo
         shell: bash -l {0}
@@ -167,7 +167,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
-          papermill CNCF_CaidaNormalCaidaFuerte_v1.ipynb /dev/null -k python3
+          papermill CNCF_CaidaNormalCaidaFuerte.ipynb /dev/null -k python3
 
       - name: subir cambios al repositorio
         shell: bash -l {0}
