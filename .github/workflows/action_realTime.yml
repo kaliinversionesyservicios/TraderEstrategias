@@ -47,6 +47,7 @@ jobs:
           git config user.name "kaliinversionesyservicios"
           git add .
           git commit -m "Update data notebook" || echo "No changes to commit"
+          git pull --rebase origin main
           git push origin HEAD:${{ github.ref }}
 
   pm40:
