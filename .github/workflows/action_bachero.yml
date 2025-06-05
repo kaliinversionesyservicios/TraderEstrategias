@@ -13,7 +13,21 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0 
+          ref: main
 
+      # 2. Configurar usuario de Git
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      # 3. Sincronizar la rama main antes de ejecutar el notebook
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
+
+      # 4. Configurar Miniconda e instalar dependencias
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -23,6 +37,7 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
+      # 5. Ejecutar el notebook de datos históricos
       - name: Instalar dependencias y ejecutar notebook
         shell: bash -l {0}
         run: |
@@ -36,12 +51,10 @@ jobs:
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
           git add .
           git commit -m "Update data notebook" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
 
   pm40:
     needs: bachero
@@ -51,6 +64,17 @@ jobs:
         uses: actions/checkout@v3
         with:
             token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -60,15 +84,6 @@ jobs:
           environment-name: myenv
           python-version: '3.10'
           channels: conda-forge
-
-      - name: sincronizar rama antes de ejecutar notebook
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
 
       - name: Install depedencias y Ejecutar Promedio Movil
         shell: bash -l {0}
@@ -83,12 +98,10 @@ jobs:
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
           git add .
           git commit -m "Update data notebook PM40" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
 
   RupCanalResistencia:
     needs: bachero
@@ -98,6 +111,17 @@ jobs:
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -107,15 +131,6 @@ jobs:
           environment-name: myenv
           python-version: '3.10'
           channels: conda-forge
-
-      - name: sincronizar rama antes de ejecutar notebook
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
 
       - name: Instalar dependencias y ejecutar notebook Ruptura canal
         shell: bash -l {0}
@@ -130,12 +145,10 @@ jobs:
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
           git add .
           git commit -m "Update data notebook Rup. Canal Resistencia" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
 
   cncf:
     needs: bachero
@@ -145,6 +158,17 @@ jobs:
         uses: actions/checkout@v3
         with:
             token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -154,15 +178,6 @@ jobs:
           environment-name: myenv
           python-version: '3.10'
           channels: conda-forge
-
-      - name: sincronizar rama antes de ejecutar notebook
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
 
       - name: Install depedencias y Ejecutar Promedio Movil
         shell: bash -l {0}
@@ -177,12 +192,10 @@ jobs:
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
           git add .
           git commit -m "Update data notebook CNCF" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
 
   gapAlza:
     needs: bachero
@@ -192,6 +205,17 @@ jobs:
         uses: actions/checkout@v3
         with:
             token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -201,15 +225,6 @@ jobs:
           environment-name: myenv
           python-version: '3.10'
           channels: conda-forge
-
-      - name: sincronizar rama antes de ejecutar notebook
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-          git pull --rebase origin main
 
       - name: Install depedencias y Ejecutar Promedio Movil
         shell: bash -l {0}
@@ -224,9 +239,7 @@ jobs:
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
           git add .
           git commit -m "Update data notebook Primer Gap a la Alza" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
