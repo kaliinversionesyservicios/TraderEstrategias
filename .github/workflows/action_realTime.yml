@@ -108,7 +108,7 @@ jobs:
           git add .
           git commit -m "Update data notebook PM40" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
 
   RupCanalResistencia:
     needs: real_time
@@ -249,4 +249,4 @@ jobs:
           git add .
           git commit -m "Update data notebook Primer Gap a la Alza" || echo "No changes to commit"
           git pull --rebase origin main
-          git push origin HEAD:${{ github.ref }}
+          git push origin HEAD:main
