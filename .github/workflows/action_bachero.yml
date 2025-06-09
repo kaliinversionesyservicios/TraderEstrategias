@@ -245,7 +245,7 @@ jobs:
           git push origin HEAD:main
 
   pisoFuerte:
-    needs: real_time
+    needs: bachero
     runs-on: ubuntu-latest
     steps:
       - name: Clonar repositorio
