@@ -2,41 +2,151 @@ name: Run Data Real-Time cada 15 minutos
 on:
   schedule:
     - cron: "0 * * * *"  # Cada 15 minutos
-  workflow_dispatch:      # Para ejecutarlo manualmente
+  workflow_dispatch: {}    # Para ejecutarlo manualmente
+
+# Cancelar cualquier ejecución anterior al disparar de nuevo
+concurrency:
+  group: data-pipeline
+  cancel-in-progress: true
 
 jobs:
-  run-notebooks:
+  real_time:
+    name: Real-Time Data
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verificar horario (06:00–20:00 UTC)
+        run: |
+          HOUR=$(date -u +'%H')
+          if [ "$HOUR" -lt 6 ] || [ "$HOUR" -gt 20 ]; then
+            echo "Fuera de horario. Saliendo."
+            exit 0
+          fi
+
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+
+      - name: Configurar Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar main
+        run: git pull --rebase origin main
+
+      - name: Cachear paquetes de Conda
+        uses: actions/cache@v3
+        with:
+          path: ~/miniconda/pkgs
+          key: conda-pkgs-${{ runner.os }}-python3.10
+
+      - name: Cachear pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-requirements
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: 3.10
+          channels: conda-forge
+
+      - name: Instalar dependencias
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance
+          pip install backtesting
+
+      - name: Ejecutar notebook Real-Time
+        run: papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
+
+      - name: Commit & Push cambios
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          # Solo commitear y pushear si hay cambios
+          if ! git diff --quiet; then
+            git add .
+            git commit -m "Update real-time data"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo "Sin cambios."
+          fi
+  
+  notebooks:
+    name: Ejecutar Notebooks Secundarios
+    needs: real_time
     runs-on: ubuntu-latest
     strategy:
       matrix:
         notebook:
-          - { file: downLoadDataRealtimeAlpha.ipynb, msg: "Update data notebook" }
-          - { file: PM40_PromedioMovil40.ipynb, msg: "Update PM40" }
-          - { file: BreakOut_Indicator.ipynb, msg: "Update Ruptura canal" }
-          - { file: CNCF_CaidaNormalCaidaFuerte.ipynb, msg: "Update Caida Normal Caida Fuerte" }
-          - { file: PrimerGapAlza.ipynb, msg: "Update Gap a la Alza" }
-          - { file: pisoFuerte.ipynb, msg: "Update Piso Fuerte" }
-
+          - file: PM40_PromedioMovil40.ipynb
+            msg: "Update PM40 notebook"
+          - file: BreakOut_Indicator.ipynb
+            msg: "Update breakout notebook"
+          - file: CNCF_CaidaNormalCaidaFuerte.ipynb
+            msg: "Update CNCF notebook"
+          - file: PrimerGapAlza.ipynb
+            msg: "Update gap alza notebook"
+          - file: pisoFuerte.ipynb
+            msg: "Update piso fuerte notebook"
     steps:
-      - uses: actions/checkout@v3
-        with: { fetch-depth: 0, token: ${{ secrets.GIT_ACTION }} }
+      - name: Checkout repo
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+
       - name: Configurar Git
         run: |
-          git config user.email "…"
-          git config user.name "…"
-      - name: Conda & ejecutar {{ matrix.notebook.file }}
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar main
+        run: git pull --rebase origin main
+
+      - name: Cachear paquetes de Conda
+        uses: actions/cache@v3
+        with:
+          path: ~/miniconda/pkgs
+          key: conda-pkgs-${{ runner.os }}-python3.10
+
+      - name: Cachear pip
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ runner.os }}-requirements
+
+      - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: '3.10'
+          auto-activate-base: false
           environment-name: myenv
+          python-version: 3.10
           channels: conda-forge
-      - run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib backtesting
-          papermill {{ matrix.notebook.file }} /dev/null -k python3
-      - name: Commit & Push
-        env: { TOKEN: ${{ secrets.GIT_ACTION }} }
+
+      - name: Instalar dependencias
         run: |
-          git add .
-          git commit -m "${{ matrix.notebook.msg }}" || echo "No changes"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+
+      - name: Ejecutar ${{ matrix.notebook.file }}
+        run: papermill ${{ matrix.notebook.file }} /dev/null -k python3
+
+      - name: Commit & Push cambios
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          if ! git diff --quiet; then
+            git add .
+            git commit -m "${{ matrix.notebook.msg }}"
+            git pull --rebase origin main
+            git push origin HEAD:main
+          else
+            echo "Sin cambios."
+          fi
