@@ -1,0 +1,15 @@
+name: myenv
+channels:
+  - conda-forge
+dependencies:
+  - python=3.10
+  - papermill
+  - ipykernel
+  - pandas
+  - numpy
+  - scikit-learn
+  - yfinance
+  - ta-lib
+  - pip
+  - pip:
+    - backtesting
