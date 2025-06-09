@@ -5,299 +5,38 @@ on:
   workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
-  real_time:
+  run-notebooks:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        notebook:
+          - { file: downLoadDataRealtimeAlpha.ipynb, msg: "Update data notebook" }
+          - { file: PM40_PromedioMovil40.ipynb, msg: "Update PM40" }
+          - { file: BreakOut_Indicator.ipynb, msg: "Update Ruptura canal" }
+          - { file: CNCF_CaidaNormalCaidaFuerte.ipynb, msg: "Update Caida Normal Caida Fuerte" }
+          - { file: PrimerGapAlza.ipynb, msg: "Update Gap a la Alza" }
+          - { file: pisoFuerte.ipynb, msg: "Update Piso Fuerte" }
+
     steps:
-      - name: Verificar periodo de ejecucion (6:00 - 20:00 UTC)
+      - uses: actions/checkout@v3
+        with: { fetch-depth: 0, token: ${{ secrets.GIT_ACTION }} }
+      - name: Configurar Git
         run: |
-          HORA=$(date -u +"%H")
-          if [ "$HORA" -lt 6 ] || [ "$HORA" -gt 20 ]; then
-            echo "Fuera de horario. Cancelando workflow."
-            exit 0
-          fi
-
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0           # Traer todo el historial para poder rebasar
-          ref: main
-
-      # 3. (Opcional) Configurar usuario globalmente en este job
-      - name: Configurar usuario de Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      # 4. Sincronizar la rama main antes de ejecutar el notebook
-      - name: Sincronizar rama main (pull --rebase)
-        run: |
-          git pull --rebase origin main
-
-      # 5. Configurar Miniconda y ejecutar el notebook
-      - name: Configurar Miniconda
+          git config user.email "…"
+          git config user.name "…"
+      - name: Conda & ejecutar {{ matrix.notebook.file }}
         uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-activate-base: false
-          activate-environment: myenv
-          environment-name: myenv
           python-version: '3.10'
+          environment-name: myenv
           channels: conda-forge
-
-      - name: Instalar dependencias y ejecutar notebook real time
-        shell: bash -l {0}
-        run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
-      
-      # 6. Hacer add/commit y volver a sincronizar antes del push
-      - name: subir cambios al repo
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
+      - run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib backtesting
+          papermill {{ matrix.notebook.file }} /dev/null -k python3
+      - name: Commit & Push
+        env: { TOKEN: ${{ secrets.GIT_ACTION }} }
         run: |
           git add .
-          git commit -m "Update data notebook" || echo "No changes to commit"
+          git commit -m "${{ matrix.notebook.msg }}" || echo "No changes"
           git pull --rebase origin main
           git push origin HEAD:main
-
-  pm40:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-            token: ${{ secrets.GIT_ACTION }}
-            fetch-depth: 0
-            ref: main
-      
-      - name: Configurar usuario de Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Sincronizar rama main (pull --rebase)
-        run: |
-          git pull --rebase origin main
-
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          activate-environment: myenv
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y Ejecutar Promedio Movil
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          papermill PM40_PromedioMovil40.ipynb /dev/null -k python3
-
-      - name: subir cambios al repositorio
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git add .
-          git commit -m "Update data notebook PM40" || echo "No changes to commit"
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-  RupCanalResistencia:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0
-          ref: main
-
-      - name: Configurar usuario de Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Sincronizar rama main (pull --rebase)
-        run: |
-          git pull --rebase origin main
-
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          activate-environment: myenv
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Instalar dependencias y ejecutar notebook Ruptura canal
-        shell: bash -l {0}
-        run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          papermill BreakOut_Indicator.ipynb /dev/null -k python3
-        
-      - name: subir cambios al repo
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git add .
-          git commit -m "Update data notebook Rup. Canal Resistencia" || echo "No changes to commit"
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-  cncf:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-            token: ${{ secrets.GIT_ACTION }}
-            fetch-depth: 0
-            ref: main
-
-      - name: Configurar usuario de Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Sincronizar rama main (pull --rebase)
-        run: |
-          git pull --rebase origin main
-
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          activate-environment: myenv
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y Ejecutar Promedio Movil
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          papermill CNCF_CaidaNormalCaidaFuerte.ipynb /dev/null -k python3
-
-      - name: subir cambios al repositorio
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git add .
-          git commit -m "Update data notebook CNCF" || echo "No changes to commit"
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-  gapAlza:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-            token: ${{ secrets.GIT_ACTION }}
-            fetch-depth: 0
-            ref: main
-
-      - name: Configurar usuario de Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Sincronizar rama main (pull --rebase)
-        run: |
-          git pull --rebase origin main
-
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          activate-environment: myenv
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y Ejecutar Promedio Movil
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          papermill PrimerGapAlza.ipynb /dev/null -k python3
-
-      - name: subir cambios al repositorio
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git add .
-          git commit -m "Update data notebook Primer Gap a la Alza" || echo "No changes to commit"
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-  pisoFuerte:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-            token: ${{ secrets.GIT_ACTION }}
-            fetch-depth: 0
-            ref: main
-      
-      - name: Configurar usuario de Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Sincronizar rama main (pull --rebase)
-        run: |
-          git pull --rebase origin main
-
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          activate-environment: myenv
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y Ejecutar Piso Fuerte
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          papermill pisoFuerte.ipynb /dev/null -k python3
-
-      - name: subir cambios al repositorio
-        shell: bash -l {0}
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          git add .
-          git commit -m "Update data notebook Piso Fuerte" || echo "No changes to commit"
-          git pull --rebase origin main
-          git push origin HEAD:main
-
-
-
-
