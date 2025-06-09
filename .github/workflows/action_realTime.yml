@@ -58,7 +58,7 @@ jobs:
           auto-activate-base: false
 
       - name: Ejecutar notebook Real-Time
-        run: papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
+        run: conda run -n myenv papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
 
       - name: Commit & Push cambios
         env:
@@ -128,7 +128,7 @@ jobs:
           auto-activate-base: false
 
       - name: Ejecutar ${{ matrix.notebook.file }}
-        run: papermill ${{ matrix.notebook.file }} /dev/null -k python3
+        run: conda run -n myenv papermill ${{ matrix.notebook.file }} /dev/null -k python3
 
       - name: Commit & Push cambios
         env:
