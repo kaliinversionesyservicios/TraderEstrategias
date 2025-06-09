@@ -58,8 +58,9 @@ jobs:
 
       - name: Instalar dependencias
         run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
+          python -m ipykernel install --user --name python3
 
       - name: Ejecutar notebook Real-Time
         run: papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
