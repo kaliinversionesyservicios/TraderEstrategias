@@ -48,19 +48,14 @@ jobs:
           path: ~/.cache/pip
           key: pip-${{ runner.os }}-requirements
 
-      - name: Configurar Miniconda
+      - name: Setup Mamba & env from file
         uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-activate-base: false
-          environment-name: myenv
           python-version: '3.10'
-          channels: conda-forge
-
-      - name: Instalar dependencias
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
+          activate-environment: myenv
+          environment-file: environment.yml
+          installer: mamba
+          auto-activate-base: false
 
       - name: Ejecutar notebook Real-Time
         run: papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
@@ -123,18 +118,14 @@ jobs:
           path: ~/.cache/pip
           key: pip-${{ runner.os }}-requirements
 
-      - name: Configurar Miniconda
+      - name: Setup Mamba & env from file
         uses: conda-incubator/setup-miniconda@v2
         with:
-          auto-activate-base: false
-          environment-name: myenv
           python-version: 3.10
-          channels: conda-forge
-
-      - name: Instalar dependencias
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
+          activate-environment: myenv
+          environment-file: environment.yml
+          installer: mamba
+          auto-activate-base: false
 
       - name: Ejecutar ${{ matrix.notebook.file }}
         run: papermill ${{ matrix.notebook.file }} /dev/null -k python3
