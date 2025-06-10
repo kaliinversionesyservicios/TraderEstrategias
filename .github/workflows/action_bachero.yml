@@ -320,7 +320,7 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Install depedencias y Ejecutar Promedio Movil
+      - name: Install depedencias y Ejecutar BreakOut_Acista
         shell: bash -l {0}
         run: |
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib

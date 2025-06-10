@@ -292,7 +292,7 @@ jobs:
           git push origin HEAD:main
 
   breakOut_Alcista:
-    needs: bachero
+    needs: real_time
     runs-on: ubuntu-latest
     steps:
       - name: Clonar repositorio
@@ -320,7 +320,7 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Install depedencias y Ejecutar Promedio Movil
+      - name: Install depedencias y Ejecutar BreakOut_Acista
         shell: bash -l {0}
         run: |
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
@@ -337,6 +337,11 @@ jobs:
           git commit -m "Update data notebook BreakOut_Acista" || echo "No changes to commit"
           git pull --rebase origin main
           git push origin HEAD:main
+
+
+
+
+
 
 
 
