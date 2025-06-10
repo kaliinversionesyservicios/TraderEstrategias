@@ -53,7 +53,7 @@ jobs:
         run: conda run -n myenv papermill downLoadDataRealtimeAlpha.ipynb output-downLoadDataRealtimeAlpha.ipynb -k python3
 
       - name: Upload Real-Time artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: realtime-notebook
           path: output-downLoadDataRealtimeAlpha.ipynb
@@ -118,7 +118,7 @@ jobs:
 
       # 1) Descargar el notebook de realtime
       - name: Descargar artifact Real-Time
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: realtime-notebook
           path: ./notebooks-updated
