@@ -14,14 +14,6 @@ jobs:
     name: Real-Time Data
     runs-on: ubuntu-latest
     steps:
-      - name: Verificar horario (06:00–20:00 UTC)
-        run: |
-          HOUR=$(date -u +'%H')
-          if [ "$HOUR" -lt 6 ] || [ "$HOUR" -gt 20 ]; then
-            echo "Fuera de horario. Saliendo."
-            exit 0
-          fi
-
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
