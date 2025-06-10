@@ -98,7 +98,7 @@ jobs:
             output-${{ matrix.notebook.file }} -k python3
 
       - name: Upload artifact for ${{ matrix.notebook.file }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: executed-${{ matrix.notebook.file }}
           path: output-${{ matrix.notebook.file }}
