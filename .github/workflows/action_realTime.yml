@@ -1,152 +1,297 @@
-name: Run Data Real-Time cada 15 minutos
+name: Run Real Time Data
+
 on:
   schedule:
-    - cron: "*/30 * * * *"  # Cada 15 minutos
-  workflow_dispatch: {}    # Para ejecutarlo manualmente
-
-# Cancelar cualquier ejecución anterior al disparar de nuevo
-concurrency:
-  group: data-pipeline
-  cancel-in-progress: true
+    - cron: "*/30 * * * *"  
+  workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
   real_time:
-    name: Real-Time Data
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Clonar repositorio
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0
+          fetch-depth: 0 
+          ref: main
 
-      - name: Configurar Git
+      # 2. Configurar usuario de Git
+      - name: Configurar usuario de Git
         run: |
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
 
-      - name: Sincronizar main
-        run: git pull --rebase origin main
+      # 3. Sincronizar la rama main antes de ejecutar el notebook
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
 
-      - name: Cachear paquetes de Conda
-        uses: actions/cache@v3
-        with:
-          path: ~/miniconda/pkgs
-          key: conda-pkgs-${{ runner.os }}-python3.10
-
-      - name: Cachear pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-requirements
-
-      - name: Setup Mamba & env from file
+      # 4. Configurar Miniconda e instalar dependencias
+      - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
-          python-version: '3.10'
-          activate-environment: myenv
-          environment-file: environment.yml
-          use-mamba: true
           auto-activate-base: false
-
-      - name: Ejecutar notebook Real-Time
-        run: conda run -n myenv papermill downLoadDataRealtimeAlpha.ipynb output-downLoadDataRealtimeAlpha.ipynb -k python3
-
-      - name: Upload Real-Time artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: realtime-notebook
-          path: output-downLoadDataRealtimeAlpha.ipynb
-
-  notebooks:
-    name: Ejecutar Notebooks Secundarios (Paralelo)
-    needs: real_time
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        notebook:
-          - file: PM40_PromedioMovil40.ipynb
-            msg: "Update PM40 notebook"
-          - file: BreakOut_Indicator.ipynb
-            msg: "Update BreakOut notebook"
-          - file: CNCF_CaidaNormalCaidaFuerte.ipynb
-            msg: "Update CNCF notebook"
-          - file: PrimerGapAlza.ipynb
-            msg: "Update PrimerGap notebook"
-          - file: pisoFuerte.ipynb
-            msg: "Update PisoFuerte notebook"
-    steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0
-
-      - name: Setup Mamba & env from file
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: '3.10'
           activate-environment: myenv
-          environment-file: environment.yml
-          use-mamba: true
-          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
 
-      - name: Ejecutar ${{ matrix.notebook.file }}
+      # 5. Ejecutar el notebook de datos históricos
+      - name: Instalar dependencias y ejecutar notebook
+        shell: bash -l {0}
         run: |
-          conda run -n myenv papermill \
-            ${{ matrix.notebook.file }} \
-            output-${{ matrix.notebook.file }} -k python3
-
-      - name: Upload artifact for ${{ matrix.notebook.file }}
-        uses: actions/upload-artifact@v4
-        with:
-          name: executed-${{ matrix.notebook.file }}
-          path: output-${{ matrix.notebook.file }}
-
-  publish:
-    name: Publicar todos los notebooks
-    needs:
-      - real_time
-      - notebooks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repo limpio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0
-
-      # 1) Descargar el notebook de realtime
-      - name: Descargar artifact Real-Time
-        uses: actions/download-artifact@v4
-        with:
-          name: realtime-notebook
-          path: ./notebooks-updated
-
-      # 2) Descargar todos los secundarios
-      - name: Descargar artifacts paralelos
-        uses: actions/download-artifact@v4
-        with:
-          path: ./notebooks-updated
-
-      - name: Copiar todos los notebooks al repo
-        run: |
-          cp notebooks-updated/* .
-
-      - name: Configurar Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Commit & Push cambios
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
+      
+      - name: subir cambios al repo
+        shell: bash -l {0}
         env:
           TOKEN: ${{ secrets.GIT_ACTION }}
         run: |
-          if ! git diff --quiet; then
-            git add .
-            git commit -m "Update all notebooks in parallel"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          else
-            echo "Sin cambios que commitear."
-          fi
+          git add .
+          git commit -m "Update data Real Time" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  pm40:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+            token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: myenv
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Install depedencias y Ejecutar Promedio Movil
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill PM40_PromedioMovil40.ipynb /dev/null -k python3
+
+      - name: subir cambios al repositorio
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git add .
+          git commit -m "Update data notebook PM40" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  RupCanalResistencia:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: myenv
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Instalar dependencias y ejecutar notebook Ruptura canal
+        shell: bash -l {0}
+        run: |
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill BreakOut_Indicator.ipynb /dev/null -k python3
+        
+      - name: subir cambios al repo
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git add .
+          git commit -m "Update data notebook Rup. Canal Resistencia" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  cncf:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+            token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: myenv
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Install depedencias y Ejecutar Promedio Movil
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill CNCF_CaidaNormalCaidaFuerte.ipynb /dev/null -k python3
+
+      - name: subir cambios al repositorio
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git add .
+          git commit -m "Update data notebook CNCF" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  gapAlza:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+            token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: myenv
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Install depedencias y Ejecutar Promedio Movil
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill PrimerGapAlza.ipynb /dev/null -k python3
+
+      - name: subir cambios al repositorio
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git add .
+          git commit -m "Update data notebook Primer Gap a la Alza" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+  pisoFuerte:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+            token: ${{ secrets.GIT_ACTION }}
+            fetch-depth: 0
+            ref: main
+      
+      - name: Configurar usuario de Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
+
+      - name: Sincronizar rama main (pull --rebase)
+        run: |
+          git pull --rebase origin main
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          activate-environment: myenv
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Install depedencias y Ejecutar Piso Fuerte
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          papermill pisoFuerte.ipynb /dev/null -k python3
+
+      - name: subir cambios al repositorio
+        shell: bash -l {0}
+        env:
+          TOKEN: ${{ secrets.GIT_ACTION }}
+        run: |
+          git add .
+          git commit -m "Update data notebook Piso Fuerte" || echo "No changes to commit"
+          git pull --rebase origin main
+          git push origin HEAD:main
+
+
+
+
+
