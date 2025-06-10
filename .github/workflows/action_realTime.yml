@@ -50,24 +50,16 @@ jobs:
           auto-activate-base: false
 
       - name: Ejecutar notebook Real-Time
-        run: conda run -n myenv papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
+        run: conda run -n myenv papermill downLoadDataRealtimeAlpha.ipynb output-downLoadDataRealtimeAlpha.ipynb -k python3
 
-      - name: Commit & Push cambios
-        env:
-          TOKEN: ${{ secrets.GIT_ACTION }}
-        run: |
-          # Solo commitear y pushear si hay cambios
-          if ! git diff --quiet; then
-            git add .
-            git commit -m "Update real-time data"
-            git pull --rebase origin main
-            git push origin HEAD:main
-          else
-            echo "Sin cambios."
-          fi
-  
+      - name: Upload Real-Time artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: realtime-notebook
+          path: output-downLoadDataRealtimeAlpha.ipynb
+
   notebooks:
-    name: Ejecutar Notebooks Secundarios
+    name: Ejecutar Notebooks Secundarios (Paralelo)
     needs: real_time
     runs-on: ubuntu-latest
     strategy:
@@ -76,39 +68,19 @@ jobs:
           - file: PM40_PromedioMovil40.ipynb
             msg: "Update PM40 notebook"
           - file: BreakOut_Indicator.ipynb
-            msg: "Update breakout notebook"
+            msg: "Update BreakOut notebook"
           - file: CNCF_CaidaNormalCaidaFuerte.ipynb
             msg: "Update CNCF notebook"
           - file: PrimerGapAlza.ipynb
-            msg: "Update gap alza notebook"
+            msg: "Update PrimerGap notebook"
           - file: pisoFuerte.ipynb
-            msg: "Update piso fuerte notebook"
+            msg: "Update PisoFuerte notebook"
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
         with:
           token: ${{ secrets.GIT_ACTION }}
           fetch-depth: 0
-
-      - name: Configurar Git
-        run: |
-          git config user.email "kaliinversionesyservicios@gmail.com"
-          git config user.name "kaliinversionesyservicios"
-
-      - name: Sincronizar main
-        run: git pull --rebase origin main
-
-      - name: Cachear paquetes de Conda
-        uses: actions/cache@v3
-        with:
-          path: ~/miniconda/pkgs
-          key: conda-pkgs-${{ runner.os }}-python3.10
-
-      - name: Cachear pip
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: pip-${{ runner.os }}-requirements
 
       - name: Setup Mamba & env from file
         uses: conda-incubator/setup-miniconda@v2
@@ -120,7 +92,51 @@ jobs:
           auto-activate-base: false
 
       - name: Ejecutar ${{ matrix.notebook.file }}
-        run: conda run -n myenv papermill ${{ matrix.notebook.file }} /dev/null -k python3
+        run: |
+          conda run -n myenv papermill \
+            ${{ matrix.notebook.file }} \
+            output-${{ matrix.notebook.file }} -k python3
+
+      - name: Upload artifact for ${{ matrix.notebook.file }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: executed-${{ matrix.notebook.file }}
+          path: output-${{ matrix.notebook.file }}
+
+  publish:
+    name: Publicar todos los notebooks
+    needs:
+      - real_time
+      - notebooks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo limpio
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+
+      # 1) Descargar el notebook de realtime
+      - name: Descargar artifact Real-Time
+        uses: actions/download-artifact@v3
+        with:
+          name: realtime-notebook
+          path: ./notebooks-updated
+
+      # 2) Descargar todos los secundarios
+      - name: Descargar artifacts paralelos
+        uses: actions/download-artifact@v3
+        with:
+          path: ./notebooks-updated
+
+      - name: Copiar todos los notebooks al repo
+        run: |
+          cp notebooks-updated/* .
+
+      - name: Configurar Git
+        run: |
+          git config user.email "kaliinversionesyservicios@gmail.com"
+          git config user.name "kaliinversionesyservicios"
 
       - name: Commit & Push cambios
         env:
@@ -128,9 +144,9 @@ jobs:
         run: |
           if ! git diff --quiet; then
             git add .
-            git commit -m "${{ matrix.notebook.msg }}"
+            git commit -m "Update all notebooks in parallel"
             git pull --rebase origin main
             git push origin HEAD:main
           else
-            echo "Sin cambios."
+            echo "Sin cambios que commitear."
           fi
