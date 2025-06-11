@@ -61,14 +61,15 @@ jobs:
         with:
           name: realtime-data-xh
           path: data
-          
-      - name: Verificar archivos en carpeta data
+
+      - name: Colocar dataxh.txt en data/dataxh.txt
         run: |
-          echo "Contenido del directorio data:"
-          ls -R data
-          echo ""
-          echo "Mostrando primeras líneas de dataxh.txt si existe:"
-          cat data/dataxh.txt | head -n 10 || echo "❌ Archivo dataxh.txt no encontrado"
+          find data -type f -name dataxh.txt -exec mv {} data/dataxh.txt \;
+
+      - name: Pre-check: contenido de data/dataxh.txt
+        run: |
+          ls -l data
+          head -n 5 data/dataxh.txt
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -305,8 +306,8 @@ jobs:
           mv data/realtime-data-xd/dataxd.txt data/dataxd.txt
           mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
           mv data/pm40-data-txt/pm40_h.txt data/pm40_h.txt
-          mv data/pm40-backtesting/estadisticas_pm40.txt data/estadisticas_pm40.txt
-          mv data/pm40-backtesting/trades_pm40.txt data/trades_pm40.txt
+          mv data/pm40-backtesting/estadisticas_pm40.txt data/backtesting/estadisticas_pm40.txt
+          mv data/pm40-backtesting/trades_pm40.txt data/backtesting/trades_pm40.txt
 
       - name: Ver cambios
         run: git status
