@@ -39,6 +39,11 @@ jobs:
         with:
           name: downLoadDataRealtimeAlpha
           path: output/downLoadDataRealtimeAlpha.ipynb
+        
+      - uses: actions/upload-artifact@v4
+        with:
+          name: realtime-data-txt
+          path: data/pm40_h.txt
 
   pm40:
     needs: real_time
@@ -271,9 +276,20 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: output
+        
+      - name: Descargar artifact de datos Real-Time
+        uses: actions/download-artifact@v4
+        with:
+          name: realtime-data-txt
+          path: data
 
       - name: Mover archivos al root del repo
         run:  cp -R output/. .
+      
+      - name: Copiar archivos de data/
+        run: |
+          # Cópialos desde el workspace del runner (que contiene data/ generado)
+          cp -R data ./data
 
       - name: Commit y push
         run: |
