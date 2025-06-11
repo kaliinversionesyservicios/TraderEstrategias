@@ -273,7 +273,7 @@ jobs:
           path: output
 
       - name: Mover archivos al root del repo
-        run: cp output/**/* output/.*
+        run:  cp -R output/. .
 
       - name: Commit y push
         run: |
