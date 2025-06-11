@@ -40,10 +40,17 @@ jobs:
           name: downLoadDataRealtimeAlpha
           path: output/downLoadDataRealtimeAlpha.ipynb
         
-      - uses: actions/upload-artifact@v4
+      - name: Upload dataxd.txt
+        uses: actions/upload-artifact@v4
         with:
-          name: realtime-data-txt
-          path: data/pm40_h.txt
+          name: realtime-data-xd
+          path: data/dataxd.txt
+
+      - name: Upload dataxh.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: realtime-data-xh
+          path: data/dataxh.txt
 
   pm40:
     needs: real_time
@@ -277,23 +284,24 @@ jobs:
         with:
           path: output
         
-      - name: Descargar artifact de datos Real-Time
+      - name: Descargar dataxd.txt
         uses: actions/download-artifact@v4
         with:
-          name: realtime-data-txt
+          name: realtime-data-xd
+          path: data
+
+      - name: Descargar dataxh.txt
+        uses: actions/download-artifact@v4
+        with:
+          name: realtime-data-xh
           path: data
 
       - name: Mover archivos al root del repo
         run:  cp -R output/. .
-      
-      - name: Copiar archivos de data/
-        run: |
-          # Cópialos desde el workspace del runner (que contiene data/ generado)
-          cp -R data ./data
 
       - name: Commit y push
         run: |
-          git add .
+          git add *.ipynb data/dataxd.txt data/dataxh.txt
           git commit -m "Update todos los notebooks" || echo "No changes"
           git pull --rebase origin main
           git push origin HEAD:main
