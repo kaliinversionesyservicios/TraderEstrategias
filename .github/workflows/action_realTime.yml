@@ -67,11 +67,6 @@ jobs:
       - name: Mover dataxh.txt al path correcto
         run: mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
 
-      - name: Verificar archivo descargado
-        run: |
-          ls -l data
-          head -n 5 data/dataxh.txt
-
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
