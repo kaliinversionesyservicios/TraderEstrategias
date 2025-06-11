@@ -16,7 +16,6 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      # 2. Configurar Miniconda e instalar dependencias
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -25,21 +24,15 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      # 3. Ejecutar el notebook de datos históricos
       - name: Instalar dependencias y run Real Time 
         shell: bash -l {0}
         run: |
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill downLoadDataRealtimeAlpha.ipynb output/downLoadDataRealtimeAlpha.ipynb -k python3
+          mkdir -p data
+          papermill downLoadDataRealtimeAlpha.ipynb /dev/null -k python3
       
-      - uses: actions/upload-artifact@v4
-        with:
-          name: downLoadDataRealtimeAlpha
-          path: output/downLoadDataRealtimeAlpha.ipynb
-        
       - name: Upload dataxd.txt
         uses: actions/upload-artifact@v4
         with:
@@ -69,6 +62,17 @@ jobs:
         with:
           name: realtime-data-xh
           path: data
+      
+      - name: Descargar dataxd.txt de real_time
+        uses: actions/download-artifact@v4
+        with:
+          name: realtime-data-xd
+          path: data
+
+      - name: Verificar archivo descargado
+        run: |
+          ls -l data
+          head -n 5 data/dataxh.txt
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -84,13 +88,8 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill PM40_PromedioMovil40.ipynb output/PM40_PromedioMovil40.ipynb -k python3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: PM40_PromedioMovil40
-          path: output/PM40_PromedioMovil40.ipynb
+          mkdir -p data/backtesting
+          papermill PM40_PromedioMovil40.ipynb /dev/null -k python3
 
       - name: Upload pm40_h.txt
         uses: actions/upload-artifact@v4
@@ -299,36 +298,10 @@ jobs:
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
 
-      - name: Descargar artifacts
+      - name: Descargar todos los artifacts de datos
         uses: actions/download-artifact@v4
         with:
-          path: output
-        
-      - name: Descargar dataxd.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: realtime-data-xd
           path: data
-
-      - name: Descargar dataxh.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: realtime-data-xh
-          path: data
-
-      - name: Descargar pm40_h.txt
-        uses: actions/download-artifact@v4
-        with:
-          name: pm40-data-txt
-          path: data
-
-      - uses: actions/download-artifact@v4
-        with:
-          name: pm40-backtesting
-          path: data/backtesting
-
-      - name: Mover archivos al root del repo
-        run:  cp -R output/. .
 
       - name: Commit y push
         run: |
