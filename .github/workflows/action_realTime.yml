@@ -89,13 +89,197 @@ jobs:
           name: pm40-results
           path: |
             data/pm40_h.txt
-            data/backtesting/*.txt
+            data/backtesting/trades_pm40.txt
+            data/backtesting/estadisticas_pm40.txt
+
+  rupCanalResistencia:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0 
+          ref: main
+
+      - name: Descargar dataxd.txt y dataxh.txt directamente en data/
+        uses: actions/download-artifact@v4
+        with:
+          # Descarga todos los artifacts cuyo nombre empiece por "realtime-data-"
+          pattern: "realtime-data-*"
+          # Fusiona el contenido de todos ellos sin crear subcarpetas
+          merge-multiple: true
+          # Directorio donde extraer los archivos
+          path: data
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Install dependencias y Ejecutar Promedio Movil
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          mkdir -p data/backtesting
+          papermill BreakOut_Indicator.ipynb /dev/null -k python3
+
+      - name: Upload canal-resistencia-results outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: canal-resistencia-results
+          path: |
+            data/cb_h.txt
+            data/backtesting/trades.csv
+            data/backtesting/estadisticas.csv
+
+  cncf:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Descargar datos “realtime”
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "realtime-data-*"
+          merge-multiple: true
+          path: data
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Instalar dependencias y ejecutar CNCF Notebook
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          mkdir -p data/backtesting
+          papermill CNCF_CaidaNormalCaidaFuerte.ipynb /dev/null -k python3
+
+      - name: Upload cncf outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: cncf-results
+          path: |
+            data/cncf_h.txt
+            data/backtesting/trades_cncf.txt
+            data/backtesting/estadisticas_cncf.txt
+
+  gapAlza:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Descargar datos “realtime”
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "realtime-data-*"
+          merge-multiple: true
+          path: data
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Instalar dependencias y ejecutar Gap Alza
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          mkdir -p data/backtesting
+          papermill PrimerGapAlza.ipynb /dev/null -k python3
+
+      - name: Upload gapAlza outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gapalza-results
+          path: |
+            data/pga.txt
+            data/backtesting/trades_pga.txt
+            data/backtesting/estadisticas_pga.txt 
+
+  pisoFuerte:
+    needs: real_time
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clonar repositorio
+        uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.GIT_ACTION }}
+          fetch-depth: 0
+          ref: main
+
+      - name: Descargar datos “realtime”
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "realtime-data-*"
+          merge-multiple: true
+          path: data
+
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
+      - name: Instalar dependencias y ejecutar Piso Fuerte
+        shell: bash -l {0}
+        run: |
+          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
+          python -m ipykernel install --user --name python3
+          mkdir -p data/backtesting
+          papermill pisoFuerte.ipynb /dev/null -k python3
+
+      - name: Upload pisoFuerte outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: pisoFuerte-results
+          path: |
+            data/pfuerte.txt
+            data/backtesting/trades_pfuerte.txt
+            data/backtesting/estadisticas_pfuerte.txt
 
   publish:
     name: Publicar resultados finales
     needs:
       - real_time
       - pm40
+      - rupCanalResistencia
+      - cncf
+      - gapAlza
+      - pisoFuerte
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repositorio
@@ -109,7 +293,6 @@ jobs:
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
 
-      # 1) Descargar los dos artifacts de realtime en data/
       - name: Descargar datos “realtime”
         uses: actions/download-artifact@v4
         with:
@@ -125,10 +308,33 @@ jobs:
           merge-multiple: true
           path: data
 
-      - name: Ver archivos finales en data/
-        run: |
-          ls -lh data
-          ls -lh data/backtesting
+      - name: Descargar resultados Canal/Resistencia
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "canal-resistencia-results"
+          merge-multiple: true
+          path: data
+
+      - name: Descargar resultados CNCF
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "cncf-results"
+          merge-multiple: true
+          path: data
+
+      - name: Descargar resultados Gap Alza
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "gapalza-results"
+          merge-multiple: true
+          path: data
+
+      - name: Descargar resultados Piso Fuerte
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "pisoFuerte-results"
+          merge-multiple: true
+          path: data
 
       - name: Ver cambios
         run: git status
