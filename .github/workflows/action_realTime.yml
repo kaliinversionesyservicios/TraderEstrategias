@@ -301,7 +301,7 @@ jobs:
 
       - name: Commit y push
         run: |
-          git add *.ipynb data/dataxd.txt data/dataxh.txt
+          git add .
           git commit -m "Update todos los notebooks" || echo "No changes"
           git pull --rebase origin main
           git push origin HEAD:main
