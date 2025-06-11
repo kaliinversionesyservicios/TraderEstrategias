@@ -63,10 +63,6 @@ jobs:
           name: realtime-data-xh
           path: data
       
-     # ——— Mover el archivo antes de ejecutar el notebook ———
-      - name: Mover dataxh.txt al path correcto
-        run: mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
-
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
