@@ -62,6 +62,12 @@ jobs:
           name: realtime-data-xh
           path: data
 
+      - name: Verificar contenido del directorio data
+        run: |
+          echo "Contenido de data/"
+          ls -R data
+
+
       - name: Mover archivo dataxh.txt al path correcto
         run: mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
 
