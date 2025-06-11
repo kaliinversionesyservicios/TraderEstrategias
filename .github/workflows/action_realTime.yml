@@ -63,11 +63,9 @@ jobs:
           name: realtime-data-xh
           path: data
       
-      - name: Descargar dataxd.txt de real_time
-        uses: actions/download-artifact@v4
-        with:
-          name: realtime-data-xd
-          path: data
+     # ——— Mover el archivo antes de ejecutar el notebook ———
+      - name: Mover dataxh.txt al path correcto
+        run: mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
 
       - name: Verificar archivo descargado
         run: |
@@ -302,6 +300,14 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: data
+
+      - name: Mover artifacts a la carpeta data raíz
+        run: |
+          mv data/realtime-data-xd/dataxd.txt data/dataxd.txt
+          mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
+          mv data/pm40-data-txt/pm40_h.txt data/pm40_h.txt
+          mv data/pm40-backtesting/estadisticas_pm40.txt data/estadisticas_pm40.txt
+          mv data/pm40-backtesting/trades_pm40.txt data/trades_pm40.txt
 
       - name: Commit y push
         run: |
