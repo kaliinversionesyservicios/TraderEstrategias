@@ -97,187 +97,12 @@ jobs:
             data/backtesting/trades_pm40.txt
             data/backtesting/estadisticas_pm40.txt
 
-
-  rupCanalResistencia:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0 
-          ref: main
-
-      # 2. Configurar Miniconda e instalar dependencias
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y Ejecutar Ruptura Canal Resistencia
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill BreakOut_Indicator.ipynb output/BreakOut_Indicator.ipynb -k python3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: BreakOut_Indicator
-          path: output/BreakOut_Indicator.ipynb
-
-  cncf:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0 
-          ref: main
-
-      # 2. Configurar Miniconda e instalar dependencias
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y Ejecutar Caida Normal Caida Fuerte
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill CNCF_CaidaNormalCaidaFuerte.ipynb output/CNCF_CaidaNormalCaidaFuerte.ipynb -k python3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: CNCF_CaidaNormalCaidaFuerte
-          path: output/CNCF_CaidaNormalCaidaFuerte.ipynb
-
-  gapAlza:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0 
-          ref: main
-
-      # 2. Configurar Miniconda e instalar dependencias
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y run Gap Alza
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill PrimerGapAlza.ipynb output/PrimerGapAlza.ipynb -k python3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: PrimerGapAlza
-          path: output/PrimerGapAlza.ipynb
-
-  pisoFuerte:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0 
-          ref: main
-
-      # 2. Configurar Miniconda e instalar dependencias
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y run Piso Fuerte
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill pisoFuerte.ipynb output/pisoFuerte.ipynb -k python3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: pisoFuerte
-          path: output/pisoFuerte.ipynb
-
-  breakOut_Alcista:
-    needs: real_time
-    runs-on: ubuntu-latest
-    steps:
-      - name: Clonar repositorio
-        uses: actions/checkout@v3
-        with:
-          token: ${{ secrets.GIT_ACTION }}
-          fetch-depth: 0 
-          ref: main
-
-      # 2. Configurar Miniconda e instalar dependencias
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
-      - name: Install depedencias y run BreakOut_Alcista
-        shell: bash -l {0}
-        run: |
-          conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          mkdir -p output
-          papermill BreakOut_alcista.ipynb output/BreakOut_alcista.ipynb -k python3
-
-      - uses: actions/upload-artifact@v4
-        with:
-          name: BreakOut_alcista
-          path: output/BreakOut_alcista.ipynb
-
   publish:
     name: Publicar resultados finales
     needs:
       - real_time
       - pm40
-      - rupCanalResistencia
-      - cncf
-      - gapAlza
-      - pisoFuerte
-      - breakOut_Alcista
+      
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repositorio
@@ -296,13 +121,25 @@ jobs:
         with:
           path: data
 
+      - name: Ver estructura de data/
+        run: |
+          echo "--- listing data/ ---"
+          ls -R data
+
+
       - name: Mover artifacts a la carpeta data raíz
         run: |
           mv data/realtime-data-xd/dataxd.txt data/dataxd.txt
           mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
           mv data/pm40-data-txt/pm40_h.txt data/pm40_h.txt
-          mv data/pm40-backtesting/estadisticas_pm40.txt data/backtesting/estadisticas_pm40.txt
-          mv data/pm40-backtesting/trades_pm40.txt data/backtesting/trades_pm40.txt
+          mv data/pm40-backtesting/data/backtesting/estadisticas_pm40.txt data/backtesting/estadisticas_pm40.txt
+          mv data/pm40-backtesting/data/backtesting/trades_pm40.txt data/backtesting/trades_pm40.txt
+
+      - name: Ver archivos finales en data/
+        run: |
+          ls -lh data
+          ls -lh data/backtesting
+
 
       - name: Ver cambios
         run: git status
