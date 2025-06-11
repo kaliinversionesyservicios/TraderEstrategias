@@ -62,7 +62,15 @@ jobs:
         with:
           name: realtime-data-xh
           path: data
-      
+
+      - name: Verificar archivos en carpeta data
+        run: |
+          echo "Contenido del directorio data:"
+          ls -R data
+          echo ""
+          echo "Mostrando primeras líneas de dataxh.txt si existe:"
+          cat data/dataxh.txt | head -n 10 || echo "❌ Archivo dataxh.txt no encontrado"
+
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
