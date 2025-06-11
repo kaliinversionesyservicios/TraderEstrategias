@@ -56,12 +56,14 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-     # ——— Descargar el artifact de datos frescos ———
       - name: Descargar dataxh.txt de real_time
         uses: actions/download-artifact@v4
         with:
           name: realtime-data-xh
           path: data
+
+      - name: Mover archivo dataxh.txt al path correcto
+        run: mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
 
       - name: Verificar archivos en carpeta data
         run: |
@@ -79,7 +81,7 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Install depedencias y Ejecutar Promedio Movil
+      - name: Install dependencias y Ejecutar Promedio Movil
         shell: bash -l {0}
         run: |
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
@@ -101,6 +103,7 @@ jobs:
           path: |
             data/backtesting/trades_pm40.txt
             data/backtesting/estadisticas_pm40.txt
+
 
   rupCanalResistencia:
     needs: real_time
@@ -307,6 +310,9 @@ jobs:
           mv data/pm40-data-txt/pm40_h.txt data/pm40_h.txt
           mv data/pm40-backtesting/estadisticas_pm40.txt data/estadisticas_pm40.txt
           mv data/pm40-backtesting/trades_pm40.txt data/trades_pm40.txt
+
+      - name: Ver cambios
+        run: git status
 
       - name: Commit y push
         run: |
