@@ -56,15 +56,15 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      - name: Descargar dataxh.txt de real_time
+      - name: Descargar dataxd.txt y dataxh.txt directamente en data/
         uses: actions/download-artifact@v4
         with:
-          name: realtime-data-xh
+          # Descarga todos los artifacts cuyo nombre empiece por "realtime-data-"
+          pattern: "realtime-data-*"
+          # Fusiona el contenido de todos ellos sin crear subcarpetas
+          merge-multiple: true
+          # Directorio donde extraer los archivos
           path: data
-
-      - name: Colocar dataxh.txt en data/dataxh.txt
-        run: |
-          find data -type f -name dataxh.txt -exec mv {} data/dataxh.txt \;
 
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
@@ -83,26 +83,19 @@ jobs:
           mkdir -p data/backtesting
           papermill PM40_PromedioMovil40.ipynb /dev/null -k python3
 
-      - name: Upload pm40_h.txt
+      - name: Upload pm40 outputs
         uses: actions/upload-artifact@v4
         with:
-          name: pm40-data-txt
-          path: data/pm40_h.txt
-
-      - name: Upload backtesting files
-        uses: actions/upload-artifact@v4
-        with:
-          name: pm40-backtesting
+          name: pm40-results
           path: |
-            data/backtesting/trades_pm40.txt
-            data/backtesting/estadisticas_pm40.txt
+            data/pm40_h.txt
+            data/backtesting/*.txt
 
   publish:
     name: Publicar resultados finales
     needs:
       - real_time
       - pm40
-      
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repositorio
@@ -116,30 +109,26 @@ jobs:
           git config user.email "kaliinversionesyservicios@gmail.com"
           git config user.name "kaliinversionesyservicios"
 
-      - name: Descargar todos los artifacts de datos
+      # 1) Descargar los dos artifacts de realtime en data/
+      - name: Descargar datos “realtime”
         uses: actions/download-artifact@v4
         with:
+          pattern: "realtime-data-*"
+          merge-multiple: true
           path: data
 
-      - name: Ver estructura de data/
-        run: |
-          echo "--- listing data/ ---"
-          ls -R data
-
-
-      - name: Mover artifacts a la carpeta data raíz
-        run: |
-          mv data/realtime-data-xd/dataxd.txt data/dataxd.txt
-          mv data/realtime-data-xh/dataxh.txt data/dataxh.txt
-          mv data/pm40-data-txt/pm40_h.txt data/pm40_h.txt
-          mv data/pm40-backtesting/data/backtesting/estadisticas_pm40.txt data/backtesting/estadisticas_pm40.txt
-          mv data/pm40-backtesting/data/backtesting/trades_pm40.txt data/backtesting/trades_pm40.txt
+      # 2) Descargar el artifact “pm40-results” (que contiene data/pm40_h.txt y data/backtesting/*.txt)
+      - name: Descargar resultados pm40
+        uses: actions/download-artifact@v4
+        with:
+          pattern: "pm40-results"
+          merge-multiple: true
+          path: data
 
       - name: Ver archivos finales en data/
         run: |
           ls -lh data
           ls -lh data/backtesting
-
 
       - name: Ver cambios
         run: git status
@@ -150,8 +139,6 @@ jobs:
           git commit -m "Update todos los notebooks" || echo "No changes"
           git pull --rebase origin main
           git push origin HEAD:main
-
-
 
 
 
