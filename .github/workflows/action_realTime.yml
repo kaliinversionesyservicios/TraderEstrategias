@@ -63,7 +63,13 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      # 2. Configurar Miniconda e instalar dependencias
+     # ——— Descargar el artifact de datos frescos ———
+      - name: Descargar dataxh.txt de real_time
+        uses: actions/download-artifact@v4
+        with:
+          name: realtime-data-xh
+          path: data
+
       - name: Configurar Miniconda
         uses: conda-incubator/setup-miniconda@v2
         with:
@@ -85,6 +91,20 @@ jobs:
         with:
           name: PM40_PromedioMovil40
           path: output/PM40_PromedioMovil40.ipynb
+
+      - name: Upload pm40_h.txt
+        uses: actions/upload-artifact@v4
+        with:
+          name: pm40-data-txt
+          path: data/pm40_h.txt
+
+      - name: Upload backtesting files
+        uses: actions/upload-artifact@v4
+        with:
+          name: pm40-backtesting
+          path: |
+            data/backtesting/trades_pm40.txt
+            data/backtesting/estadisticas_pm40.txt
 
   rupCanalResistencia:
     needs: real_time
@@ -295,6 +315,17 @@ jobs:
         with:
           name: realtime-data-xh
           path: data
+
+      - name: Descargar pm40_h.txt
+        uses: actions/download-artifact@v4
+        with:
+          name: pm40-data-txt
+          path: data
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pm40-backtesting
+          path: data/backtesting
 
       - name: Mover archivos al root del repo
         run:  cp -R output/. .
