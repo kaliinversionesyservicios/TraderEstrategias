@@ -66,6 +66,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output
           papermill PM40_PromedioMovil40.ipynb output/PM40_PromedioMovil40.ipynb -k python3
 
       - uses: actions/upload-artifact@v4
@@ -99,6 +100,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output
           papermill BreakOut_Indicator.ipynb output/BreakOut_Indicator.ipynb -k python3
 
       - uses: actions/upload-artifact@v4
@@ -111,7 +113,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Clonar repositorio
-        uses: actions/checkout@v43
+        uses: actions/checkout@v3
         with:
           token: ${{ secrets.GIT_ACTION }}
           fetch-depth: 0 
@@ -132,6 +134,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output
           papermill CNCF_CaidaNormalCaidaFuerte.ipynb output/CNCF_CaidaNormalCaidaFuerte.ipynb -k python3
 
       - uses: actions/upload-artifact@v4
@@ -165,6 +168,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output
           papermill PrimerGapAlza.ipynb output/PrimerGapAlza.ipynb -k python3
 
       - uses: actions/upload-artifact@v4
@@ -198,6 +202,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output
           papermill pisoFuerte.ipynb output/pisoFuerte.ipynb -k python3
 
       - uses: actions/upload-artifact@v4
@@ -231,6 +236,7 @@ jobs:
           conda install -y papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output
           papermill BreakOut_alcista.ipynb output/BreakOut_alcista.ipynb -k python3
 
       - uses: actions/upload-artifact@v4
