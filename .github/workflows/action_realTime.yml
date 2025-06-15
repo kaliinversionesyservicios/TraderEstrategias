@@ -12,9 +12,10 @@ jobs:
       - name: Clonar repositorio
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.GIT_ACTION }}
+          #token: ${{ secrets.GIT_ACTION }}
+          persist-credentials: true 
           fetch-depth: 0 
-          ref: main
+          #ref: main
 
       - name: Configurar usuario de Git
         run: |
@@ -37,6 +38,11 @@ jobs:
           python -m ipykernel install --user --name python3
           mkdir -p output #Crear la carpeta de salida
           papermill downLoadDataRealtimeAlpha.ipynb output/downLoadDataRealtimeAlpha.ipynb -k python3
+
+      - name: Verificar archivos generados
+        run: |
+          echo "Contenido de data/ tras ejecución:" 
+          ls -lha data/
 
       - name: Commit y push de cambios
         uses: stefanzweifel/git-auto-commit-action@v4
