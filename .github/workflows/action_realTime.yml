@@ -37,12 +37,6 @@ jobs:
           python -m ipykernel install --user --name python3
           mkdir -p output #Crear la carpeta de salida
           papermill downLoadDataRealtimeAlpha.ipynb output/downLoadDataRealtimeAlpha.ipynb -k python3
-      
-      - name: Copiar archivos de datos actualizados
-        run: |
-          git checkout main
-          cp data/dataxd.txt data/dataxd.txt
-          cp data/dataxh.txt data/dataxh.txt
 
       - name: Commit y push de cambios
         uses: stefanzweifel/git-auto-commit-action@v4
