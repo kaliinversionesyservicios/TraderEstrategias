@@ -49,7 +49,7 @@ jobs:
         with:
           commit_message: "chore: Actualizar datos ejecutando notebook"
           file_pattern: |
-            data/dataxd.txt
-            data/dataxh.txt
+            output/dataxd.txt
+            output/dataxh.txt
           branch: main
       
