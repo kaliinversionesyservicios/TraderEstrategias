@@ -35,6 +35,7 @@ jobs:
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
+          mkdir -p output #Crear la carpeta de salida
           papermill downLoadDataRealtimeAlpha.ipynb output/downLoadDataRealtimeAlpha.ipynb -k python3
       
       - name: Copiar archivos de datos actualizados
