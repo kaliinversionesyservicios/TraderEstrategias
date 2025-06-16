@@ -5,7 +5,7 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 * * * *"  
+    - cron: "*/15 * * * *"  
   workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
           pip install backtesting
           python -m ipykernel install --user --name python3
           mkdir -p data
-          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb.ipynb_out.ipynb -k python3
+          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
       
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
