@@ -192,7 +192,7 @@ jobs:
             cp tmp/pfuerte/pfuerte_h.txt               data/pfuerte_h.txt
             cp tmp/pfuerte/backtesting/*_pfuerte.*   data/backtesting/
 
-            #PGA - Primer Gap a la Alza
+            #PGA - Primer Gap a la Alzaa
             cp tmp/pga/pga_h.txt               data/pga_h.txt
             cp tmp/pga/backtesting/*_pga.*   data/backtesting/
 
