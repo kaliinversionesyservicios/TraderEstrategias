@@ -176,7 +176,7 @@ jobs:
             cp tmp/cb/backtesting/*_cb.*   data/backtesting/
 
             #CNCF - Caida Normal Caida Fuerte
-            cp tmp/cncf/cncf_h.txt               data/cncf.txt
+            cp tmp/cncf/cncf_h.txt               data/cncf_h.txt
             cp tmp/cncf/backtesting/*_cncf.*   data/backtesting/
 
             #PFUERTE - Piso Fuerte
