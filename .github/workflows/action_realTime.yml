@@ -92,7 +92,7 @@ jobs:
         run: |
           papermill ${{ matrix.notebook.file }} ${{ matrix.notebook.name }}_out.ipynb -k python3
 
-      - name: Verificar cambios en pm40_h.txt, trades_pm40.txt y estadisticas_pm40.txt
+      - name: Verificar cambios en ${{ matrix.notebook.name }}, trades_${{ matrix.notebook.name }}  estadisticas_${{ matrix.notebook.name }}
         shell: bash
         run: |
           echo "=== Listado de archivos generados ==="
@@ -105,6 +105,15 @@ jobs:
             data/${{ matrix.notebook.name }}_h.txt \
             data/backtesting/trades_${{ matrix.notebook.name }}.* \
             data/backtesting/estadisticas_${{ matrix.notebook.name }}.*
+          echo
+          echo "=== diff ${{ matrix.notebook.name }}==="
+          git diff -- data/${{ matrix.notebook.name }}_h.txt || echo "  (sin cambios en ${{ matrix.notebook.name }}_h.txt)"
+          echo
+          echo "=== diff trades_${{ matrix.notebook.name }} ==="
+          git diff -- data/backtesting/trades_${{ matrix.notebook.name }}.txt || echo "  (sin cambios en trades_${{ matrix.notebook.name }}.txt)"
+          echo
+          echo "=== diff estadisticas_${{ matrix.notebook.name }} ==="
+          git diff -- data/backtesting/estadisticas_${{ matrix.notebook.name }}.txt || echo "  (sin cambios en estadisticas_${{ matrix.notebook.name }}.txt)"
 
       - name: Upload outputs artefact
         uses: actions/upload-artifact@v4
