@@ -63,8 +63,8 @@ jobs:
             file: pisoFuerte.ipynb
           - name: pga
             file: PrimerGapAlza.ipynb
-          #- name: cba
-          #  file: detectCanalBajistaAlcista.ipynb
+          - name: cba
+            file: detectCanalBajistaAlcista.ipynb
     steps:
       - name: Clonar repositorio con datos ya actualizados
         uses: actions/checkout@v4
@@ -159,11 +159,11 @@ jobs:
             name: salida-pga
             path: tmp/pga
 
-        #- name: Download artefact cba
-        #  uses: actions/download-artifact@v4
-        #  with:
-        #    name: salida-cba
-        #    path: tmp/cba
+        - name: Download artefact cba
+          uses: actions/download-artifact@v4
+          with:
+            name: salida-cba
+            path: tmp/cba
 
         - name: DEBUG Listar contenido de tmp/${{ matrix.notebook.name }}
           shell: bash
@@ -196,8 +196,8 @@ jobs:
             cp tmp/pga/backtesting/*_pga.*   data/backtesting/
 
             #CBA - Caida Bajista Alcista
-            #cp tmp/cba/cba_h.txt               data/cba_h.txt
-            #cp tmp/cba/backtesting/*_cba.*   data/backtesting/
+            cp tmp/cba/cba_h.txt               data/cba_h.txt
+            cp tmp/cba/backtesting/*_cba.*   data/backtesting/
 
         - name: Commit & Push outputs
           shell: bash
