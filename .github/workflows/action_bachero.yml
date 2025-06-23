@@ -196,8 +196,8 @@ jobs:
             cp tmp/pga/backtesting/*_pga.*   data/backtesting/
 
             #CBA - Caida Bajista Alcista
-            cp tmp/pga/cba_h.txt               data/cba_h.txt
-            cp tmp/pga/backtesting/*_cba.*   data/backtesting/
+            cp tmp/cba/cba_h.txt               data/cba_h.txt
+            cp tmp/cba/backtesting/*_cba.*   data/backtesting/
 
         - name: Commit & Push outputs
           shell: bash
