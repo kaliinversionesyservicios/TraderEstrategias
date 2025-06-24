@@ -53,16 +53,16 @@ jobs:
     strategy:
       matrix:
         notebook:
-          - name: pm40
-            file: PM40_PromedioMovil40.ipynb
+          #- name: pm40
+          #  file: PM40_PromedioMovil40.ipynb
           - name: cb
             file: BreakOut_Indicator.ipynb
-          - name: cncf
-            file: CNCF_CaidaNormalCaidaFuerte.ipynb
+          #- name: cncf
+          #  file: CNCF_CaidaNormalCaidaFuerte.ipynb
           - name: pfuerte
             file: pisoFuerte.ipynb
-          - name: pga
-            file: PrimerGapAlza.ipynb
+          #- name: pga
+          #  file: PrimerGapAlza.ipynb
           - name: cba
             file: detectCanalBajistaAlcista.ipynb
     steps:
@@ -138,11 +138,11 @@ jobs:
             fetch-depth: 0
             ref: main
 
-        - name: Download artefact pm40
-          uses: actions/download-artifact@v4
-          with:
-            name: salida-pm40
-            path: tmp/pm40
+        #- name: Download artefact pm40
+        #  uses: actions/download-artifact@v4
+        #  with:
+        #    name: salida-pm40
+        #    path: tmp/pm40
 
         - name: Download artefact cb
           uses: actions/download-artifact@v4
@@ -150,11 +150,11 @@ jobs:
             name: salida-cb
             path: tmp/cb
 
-        - name: Download artefact cncf
-          uses: actions/download-artifact@v4
-          with:
-            name: salida-cncf
-            path: tmp/cncf
+        #- name: Download artefact cncf
+        #  uses: actions/download-artifact@v4
+        #  with:
+        #    name: salida-cncf
+        #    path: tmp/cncf
 
         - name: Download artefact pfuerte
           uses: actions/download-artifact@v4
@@ -162,11 +162,11 @@ jobs:
             name: salida-pfuerte
             path: tmp/pfuerte
 
-        - name: Download artefact pga
-          uses: actions/download-artifact@v4
-          with:
-            name: salida-pga
-            path: tmp/pga
+        #- name: Download artefact pga
+        #  uses: actions/download-artifact@v4
+        #  with:
+        #    name: salida-pga
+        #    path: tmp/pga
         
         - name: Download artefact cba
           uses: actions/download-artifact@v4
@@ -185,24 +185,24 @@ jobs:
           run: |
             mkdir -p data data/backtesting
             # PM40
-            cp tmp/pm40/pm40_h.txt           data/pm40_h.txt
-            cp tmp/pm40/backtesting/*_pm40.*    data/backtesting/
+            #cp tmp/pm40/pm40_h.txt           data/pm40_h.txt
+            #cp tmp/pm40/backtesting/*_pm40.*    data/backtesting/
 
             #cb- canal bajista
             cp tmp/cb/cb_h.txt               data/cb_h.txt
             cp tmp/cb/backtesting/*_cb.*   data/backtesting/
 
             #CNCF - Caida Normal Caida Fuerte
-            cp tmp/cncf/cncf_h.txt               data/cncf_h.txt
-            cp tmp/cncf/backtesting/*_cncf.*   data/backtesting/
+            #cp tmp/cncf/cncf_h.txt               data/cncf_h.txt
+            #cp tmp/cncf/backtesting/*_cncf.*   data/backtesting/
 
             #PFUERTE - Piso Fuerte
             cp tmp/pfuerte/pfuerte_h.txt               data/pfuerte_h.txt
             cp tmp/pfuerte/backtesting/*_pfuerte.*   data/backtesting/
 
             #PGA - Primer Gap a la Alzaa
-            cp tmp/pga/pga_h.txt               data/pga_h.txt
-            cp tmp/pga/backtesting/*_pga.*   data/backtesting/
+            #cp tmp/pga/pga_h.txt               data/pga_h.txt
+            #cp tmp/pga/backtesting/*_pga.*   data/backtesting/
 
             #CBA - Caida Bajista Alcista
             cp tmp/cba/cba_h.txt               data/cba_h.txt
