@@ -5,7 +5,8 @@ permissions:
 
 on:
   schedule:
-    - cron: "0 3 * * *"  
+    # Todos los días a las 03:00 AM hora Perú (08:00 UTC)
+    - cron: "0 8 * * *"  
   workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
