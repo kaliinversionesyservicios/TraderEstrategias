@@ -103,12 +103,18 @@ jobs:
         run: |
           git config user.name  "kaliinversionesyservicios"
           git config user.email "kaliinversionesyservicios@gmail.com"
-          git add .
-          git diff --cached --quiet && echo "⚠️ No hay cambios para commitear." && exit 0
-          git commit -m "🔄 Resultados ${{ matrix.notebook }}"
+
           for intento in {1..5}; do
-            git pull --rebase --autostash && break
-            echo "Reintento $intento…"
-            sleep 3
+            git pull --rebase --autostash
+            git add .
+            # Si no hay cambios, salimos
+            git diff --cached --quiet && { echo "⚠️ No hay cambios para commitear."; exit 0; }
+            git commit -m "🔄 Resultados ${{ matrix.notebook }}"
+            if git push origin main; then
+              echo "✅ Push exitoso en intento $intento"
+              break
+            else
+              echo "❌ Push falló en intento $intento, reintentando…"
+              sleep $((2**intento))
+            fi
           done
-          git push origin main
