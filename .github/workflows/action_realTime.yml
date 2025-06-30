@@ -81,15 +81,27 @@ jobs:
           pip install backtesting
           python -m ipykernel install --user --name python3
 
+      - name: Mostrar diff de cambios
+        shell: bash
+        run: |
+          echo "=== git status ==="
+          git status
+          echo
+          echo "=== git diff --stat ==="
+          git diff --stat
+          echo
+          echo "=== git diff completo (líneas removidas [+] y añadidas [-]) ==="
+          git diff
+
       - name: Commit & Push outputs
+        if: success()
         shell: bash
         run: |
           git config user.name  "kaliinversionesyservicios"
           git config user.email "kaliinversionesyservicios@gmail.com"
           git add .
-          git diff --cached --quiet && exit 0
+          git diff --cached --quiet && echo "⚠️ No hay cambios para commitear." && exit 0
           git commit -m "🔄 Resultados ${{ matrix.notebook }}"
-          # Evita colisiones si varios jobs empujan a la vez
           for intento in {1..5}; do
             git pull --rebase --autostash && break
             echo "Reintento $intento…"
