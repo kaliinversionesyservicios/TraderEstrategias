@@ -80,7 +80,10 @@ jobs:
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
-
+          # Ejecuta el notebook y deja el output en *_out.ipynb
+          infile="${{ matrix.notebook }}"
+          outfile="${infile%.ipynb}_out.ipynb"
+          papermill "$infile" "$outfile" -k python3
       - name: Mostrar diff de cambios
         shell: bash
         run: |
