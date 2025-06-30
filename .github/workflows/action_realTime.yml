@@ -80,8 +80,6 @@ jobs:
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
-          outfile="${{ matrix.notebook/.ipynb/_out.ipynb }}"
-          papermill "${{ matrix.notebook }}" "$outfile" -k python3
 
       - name: Commit & Push outputs
         shell: bash
