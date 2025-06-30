@@ -57,7 +57,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        notebook: [BreakOut_IndicatorRT.ipynb, pisoFuerteRT.ipynb, notebookC.ipynb]
+        notebook: [BreakOut_IndicatorRT.ipynb, pisoFuerteRT.ipynb, detectCanalBajistaAlcista.ipynb]
     steps:
       - name: Clonar repositorio con datos ya actualizados
         uses: actions/checkout@v4
