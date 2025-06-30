@@ -56,6 +56,7 @@ jobs:
     needs: real-time
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         notebook: [BreakOut_IndicatorRT.ipynb, pisoFuerteRT.ipynb, detectCanalBajistaAlcista.ipynb]
     steps:
@@ -77,7 +78,7 @@ jobs:
       - name: Instalar dependencias y ejecutar notebook ${{ matrix.notebook }}
         shell: bash -l {0}
         run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
           # Ejecuta el notebook y deja el output en *_out.ipynb
