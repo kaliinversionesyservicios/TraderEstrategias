@@ -74,10 +74,10 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Instalar dependencias
+      - name: Instalar dependencias y ejecutar notebook ${{ matrix.notebook }}
         shell: bash -l {0}
         run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
           pip install backtesting
           python -m ipykernel install --user --name python3
           outfile="${{ matrix.notebook/.ipynb/_out.ipynb }}"
