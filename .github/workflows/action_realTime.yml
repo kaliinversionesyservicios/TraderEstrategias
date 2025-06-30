@@ -83,30 +83,6 @@ jobs:
           outfile="${{ matrix.notebook/.ipynb/_out.ipynb }}"
           papermill "${{ matrix.notebook }}" "$outfile" -k python3
 
-      - name: Verificar cambios en ${{ matrix.notebook }}, trades_${{ matrix.notebook }}  estadisticas_${{ matrix.notebook}}
-        shell: bash
-        run: |
-          echo "=== Listado de archivos generados ==="
-          ls -l \
-            data/${{ matrix.notebook }}_h.txt \
-            data/backtesting/trades_${{ matrix.notebook }}.* \
-            data/backtesting/estadisticas_${{ matrix.notebook }}.* || true
-          echo "=== git status ==="
-          git status --short \
-            data/${{ matrix.notebook }}_h.txt \
-            data/backtesting/trades_${{ matrix.notebook }}.* \
-            data/backtesting/estadisticas_${{ matrix.notebook }}.*
-          echo
-          echo "=== diff ${{ matrix.notebook }}==="
-          git diff -- data/${{ matrix.notebook }}_h.txt || echo "  (sin cambios en ${{ matrix.notebook }}_h.txt)"
-          echo
-          echo "=== diff trades_${{ matrix.notebook }} ==="
-          git diff -- data/backtesting/trades_${{ matrix.notebook }}.txt || echo "  (sin cambios en trades_${{ matrix.notebook }}.txt)"
-          echo
-          echo "=== diff estadisticas_${{ matrix.notebook }} ==="
-          git diff -- data/backtesting/estadisticas_${{ matrix.notebook }}.txt || echo "  (sin cambios en estadisticas_${{ matrix.notebook }}.txt)"
-
-      
       - name: Commit & Push outputs
         shell: bash
         run: |
