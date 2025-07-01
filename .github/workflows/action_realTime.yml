@@ -13,6 +13,16 @@ on:
     #- cron: "50 10-22 * * *"  # 05:50, 06:50, …, 17:50 Perú
   workflow_dispatch:      # Para ejecutarlo manualmente
 
+# Definimos un ancla para setup de Conda
+x-steps-conda: &conda-setup
+  - name: Configurar Miniconda
+    uses: conda-incubator/setup-miniconda@v2
+    with:
+      auto-activate-base: false
+      environment-name: myenv
+      python-version: '3.10'
+      channels: conda-forge
+
 jobs:
   real-time:
     runs-on: ubuntu-latest
