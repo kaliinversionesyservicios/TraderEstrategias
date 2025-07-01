@@ -25,14 +25,23 @@ jobs:
           fetch-depth: 0 
           ref: main
 
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
       - name: Instalar dependencias y run real-time
+        shell: bash -l {0}
         run: |
-          python -m pip install --upgrade pip
-          pip install papermill ipykernel pandas numpy scikit-learn yfinance backtesting
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+          pip install backtesting
           python -m ipykernel install --user --name python3
           mkdir -p data
           papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
-            
+      
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
         shell: bash
@@ -58,20 +67,24 @@ jobs:
           fetch-depth: 0
           ref: main
         
-      - name: Instalar librerías del sistema (para ta-lib)
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential libta-lib0 libta-lib-dev
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
 
       - name: Instalar dependencias y ejecutar notebook ${{ matrix.notebook }}
+        shell: bash -l {0}
         run: |
-          python -m pip install --upgrade pip
-          pip install papermill ipykernel pandas numpy scikit-learn yfinance ta-lib backtesting
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
+          pip install backtesting
           python -m ipykernel install --user --name python3
+          # Ejecuta el notebook y deja el output en *_out.ipynb
           infile="${{ matrix.notebook }}"
           outfile="${infile%.ipynb}_out.ipynb"
           papermill "$infile" "$outfile" -k python3
-
       - name: Mostrar diff de cambios
         shell: bash
         run: |
