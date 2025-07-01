@@ -48,8 +48,10 @@ jobs:
       - name: Instalar dependencias
         run: conda env update -f environment.yml
 
-      - name: Instalar IPykernel
-        run: python -m ipykernel install --user --name python3
+      - name: Instalar IPykernel en myenv
+        shell: bash -l {0}
+        run: |
+          python -m ipykernel install --user --name myenv --display-name "Python (myenv)"
 
       - name: Ejecutar real-time
         shell: bash -l {0}
