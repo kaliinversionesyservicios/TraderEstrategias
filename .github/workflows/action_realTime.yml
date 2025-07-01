@@ -25,39 +25,29 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      - name: Cache conda packages
-        uses: actions/cache@v3
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v4
         with:
-          path: ~/.conda/pkgs
-          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
-
-      - name: Cache pip packages
-        uses: actions/cache@v3
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('environment.yml') }}
-
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
           python-version: '3.10'
-          channels: conda-forge
+          cache: 'pip'
 
       - name: Instalar dependencias
-        run: conda env update -f environment.yml
-
-      - name: Instalar IPykernel en myenv
-        shell: bash -l {0}
         run: |
-          python -m ipykernel install --user --name myenv --display-name "Python (myenv)"
+          python -m venv .venv
+          source .venv/bin/activate
+          pip install --upgrade pip
+          pip install papermill ipykernel pandas numpy scikit-learn yfinance backtesting
+
+      - name: Registrar kernel
+        run: |
+          source .venv/bin/activate
+          python -m ipykernel install --user --name realtime-env --display-name "Python (realtime-env)"
 
       - name: Ejecutar real-time
-        shell: bash -l {0}
         run: |
+          source .venv/bin/activate
           mkdir -p data
-          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha_out.ipynb -k python3
+          papermill downLoadDataRealtimeAlpha.ipynb data/downLoadDataRealtimeAlpha_out.ipynb -k realtime-env
       
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
