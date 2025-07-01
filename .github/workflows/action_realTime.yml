@@ -25,23 +25,14 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
-
       - name: Instalar dependencias y run real-time
-        shell: bash -l {0}
         run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
-          pip install backtesting
+          python -m pip install --upgrade pip
+          pip install papermill ipykernel pandas numpy scikit-learn yfinance backtesting
           python -m ipykernel install --user --name python3
           mkdir -p data
           papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
-      
+            
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
         shell: bash
