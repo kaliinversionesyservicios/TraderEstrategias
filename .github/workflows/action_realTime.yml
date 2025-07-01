@@ -29,25 +29,15 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-          cache: 'pip'
 
-      - name: Instalar dependencias
+      - name: Instalar dependencias y run real-time
+        shell: bash -l {0}
         run: |
-          python -m venv .venv
-          source .venv/bin/activate
-          pip install --upgrade pip
-          pip install papermill ipykernel pandas numpy scikit-learn yfinance backtesting
-
-      - name: Registrar kernel
-        run: |
-          source .venv/bin/activate
-          python -m ipykernel install --user --name realtime-env --display-name "Python (realtime-env)"
-
-      - name: Ejecutar real-time
-        run: |
-          source .venv/bin/activate
+          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+          pip install backtesting
+          python -m ipykernel install --user --name python3
           mkdir -p data
-          papermill downLoadDataRealtimeAlpha.ipynb data/downLoadDataRealtimeAlpha_out.ipynb -k realtime-env
+          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
       
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
