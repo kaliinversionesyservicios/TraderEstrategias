@@ -35,22 +35,31 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      # Caché de Conda & Pip
+      - name: Cache conda packages
+        uses: actions/cache@v3
         with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
+          path: ~/.conda/pkgs
+          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('environment.yml') }}
 
-      - name: Instalar dependencias y run real-time
+      # Setup Conda & deps
+      - *conda-setup
+      - name: Instalar dependencias
+        run: conda env update -f environment.yml
+
+      - name: Instalar IPykernel
+        run: python -m ipykernel install --user --name python3
+
+      - name: Ejecutar real-time
         shell: bash -l {0}
         run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
-          pip install backtesting
-          python -m ipykernel install --user --name python3
           mkdir -p data
-          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
+          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha_out.ipynb -k python3
       
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
