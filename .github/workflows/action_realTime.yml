@@ -13,16 +13,6 @@ on:
     #- cron: "50 10-22 * * *"  # 05:50, 06:50, …, 17:50 Perú
   workflow_dispatch:      # Para ejecutarlo manualmente
 
-# Definimos un ancla para setup de Conda
-x-steps-conda: &conda-setup
-  - name: Configurar Miniconda
-    uses: conda-incubator/setup-miniconda@v2
-    with:
-      auto-activate-base: false
-      environment-name: myenv
-      python-version: '3.10'
-      channels: conda-forge
-
 jobs:
   real-time:
     runs-on: ubuntu-latest
@@ -35,20 +25,26 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      # Caché de Conda & Pip
       - name: Cache conda packages
         uses: actions/cache@v3
         with:
           path: ~/.conda/pkgs
           key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+
       - name: Cache pip packages
         uses: actions/cache@v3
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('environment.yml') }}
 
-      # Setup Conda & deps
-      - *conda-setup
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          auto-activate-base: false
+          environment-name: myenv
+          python-version: '3.10'
+          channels: conda-forge
+
       - name: Instalar dependencias
         run: conda env update -f environment.yml
 
