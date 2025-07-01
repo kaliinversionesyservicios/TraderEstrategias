@@ -3,13 +3,13 @@ channels:
   - conda-forge
 dependencies:
   - python=3.10
+  - pip
   - papermill
   - ipykernel
   - pandas
   - numpy
   - scikit-learn
   - yfinance
-  - ta-lib
-  - pip
   - pip:
     - backtesting
+    - ta-lib

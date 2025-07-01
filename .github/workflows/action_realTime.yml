@@ -11,7 +11,18 @@ on:
     #- cron: "20 10-22 * * *"  # 05:20, 06:20, …, 17:20 Perú
     #- cron: "35 10-22 * * *"  # 05:35, 06:35, …, 17:35 Perú
     #- cron: "50 10-22 * * *"  # 05:50, 06:50, …, 17:50 Perú
+    
   workflow_dispatch:      # Para ejecutarlo manualmente
+
+# Definimos un ancla para setup de Conda
+x-steps-conda: &conda-setup
+  - name: Configurar Miniconda
+    uses: conda-incubator/setup-miniconda@v2
+    with:
+      auto-activate-base: false
+      environment-name: myenv
+      python-version: '3.10'
+      channels: conda-forge
 
 jobs:
   real-time:
@@ -25,22 +36,41 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      # Caché de Conda & Pip
+      - name: Cache conda packages
+        uses: actions/cache@v3
         with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
+          path: ~/.conda/pkgs
+          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
 
-      - name: Instalar dependencias y run real-time
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('environment.yml') }}
+
+      # Setup Conda & deps
+      - *conda-setup
+      - name: Instalar dependencias
+        run: conda env update -f environment.yml
+
+      - name: Instalar IPykernel
+        run: python -m ipykernel install --user --name python3
+
+      - name: Ejecutar real-time
         shell: bash -l {0}
         run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
-          pip install backtesting
-          python -m ipykernel install --user --name python3
           mkdir -p data
-          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
+          papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha_out.ipynb -k python3
+
+      #- name: Instalar dependencias y run real-time
+      #  shell: bash -l {0}
+      #  run: |
+      #    conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance
+      #    pip install backtesting
+      #    python -m ipykernel install --user --name python3
+      #    mkdir -p data
+      #    papermill downLoadDataRealtimeAlpha.ipynb downLoadDataRealtimeAlpha.ipynb_out.ipynb -k python3
       
       - name: Commit y push de archivos actualizados
         if: ${{ always() }}
@@ -67,24 +97,32 @@ jobs:
           fetch-depth: 0
           ref: main
         
-      - name: Configurar Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      # Caché de Conda & Pip
+      - name: Cache conda packages
+        uses: actions/cache@v3
         with:
-          auto-activate-base: false
-          environment-name: myenv
-          python-version: '3.10'
-          channels: conda-forge
+          path: ~/.conda/pkgs
+          key: ${{ runner.os }}-conda-${{ hashFiles('environment.yml') }}
+      - name: Cache pip packages
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('environment.yml') }}
 
-      - name: Instalar dependencias y ejecutar notebook ${{ matrix.notebook }}
+      # Setup Conda & deps
+      - *conda-setup
+      - name: Instalar dependencias
+        run: conda env update -f environment.yml
+      - name: Instalar IPykernel
+        run: python -m ipykernel install --user --name python3
+
+      - name: Ejecutar notebook ${{ matrix.notebook }}
         shell: bash -l {0}
         run: |
-          conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
-          pip install backtesting
-          python -m ipykernel install --user --name python3
-          # Ejecuta el notebook y deja el output en *_out.ipynb
           infile="${{ matrix.notebook }}"
           outfile="${infile%.ipynb}_out.ipynb"
           papermill "$infile" "$outfile" -k python3
+          
       - name: Mostrar diff de cambios
         shell: bash
         run: |
