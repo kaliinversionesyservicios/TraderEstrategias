@@ -25,10 +25,13 @@ jobs:
           fetch-depth: 0 
           ref: main
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v4
+      - name: Configurar Miniconda
+        uses: conda-incubator/setup-miniconda@v2
         with:
+          auto-activate-base: false
+          environment-name: myenv
           python-version: '3.10'
+          channels: conda-forge
 
       - name: Instalar dependencias y run real-time
         shell: bash -l {0}
