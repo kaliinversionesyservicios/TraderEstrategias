@@ -3,14 +3,15 @@ name: Run real-time
 permissions:
   contents: write
 
-on:
-  schedule:
-    # De 04:05 a 17:50 hora Perú (UTC–5) cada 15 minutos
-    - cron: "5 9-22 * * *"   # 04:05, 05:05, …, 17:05 Perú
-    - cron: "20 9-22 * * *"  # 04:20, 05:20, …, 17:20 Perú
-    - cron: "35 9-22 * * *"  # 04:35, 05:35, …, 17:35 Perú
-    - cron: "50 9-22 * * *"  # 04:50, 05:50, …, 17:50 Perú
-  workflow_dispatch:      # Para ejecutarlo manualmente
+#on:
+#  schedule:
+#    - cron: "0,15,30,45 10-22 * * *"
+    # De 05:00 a 17:50 hora Perú (UTC–5) cada 15 minutos
+    #- cron: "5 10-22 * * *"   # 05:05, 06:05, …, 17:05 Perú
+    #- cron: "20 10-22 * * *"  # 05:20, 06:20, …, 17:20 Perú
+    #- cron: "35 10-22 * * *"  # 05:35, 06:35, …, 17:35 Perú
+    #- cron: "50 10-22 * * *"  # 05:50, 06:50, …, 17:50 Perú
+#  workflow_dispatch:      # Para ejecutarlo manualmente
 
 jobs:
   real-time:
@@ -55,20 +56,9 @@ jobs:
     needs: real-time
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
-        notebook:
-          #- name: pm40
-          #  file: PM40_PromedioMovil40.ipynb
-          - name: cb
-            file: BreakOut_Indicator.ipynb
-          #- name: cncf
-          #  file: CNCF_CaidaNormalCaidaFuerte.ipynb
-          - name: pfuerte
-            file: pisoFuerte.ipynb
-          #- name: pga
-          #  file: PrimerGapAlza.ipynb
-          - name: cba
-            file: detectCanalBajistaAlcista.ipynb
+        notebook: [BreakOut_IndicatorRT.ipynb, pisoFuerteRT.ipynb, detectCanalBajistaAlcista.ipynb]
     steps:
       - name: Clonar repositorio con datos ya actualizados
         uses: actions/checkout@v4
@@ -85,138 +75,46 @@ jobs:
           python-version: '3.10'
           channels: conda-forge
 
-      - name: Instalar dependencias
+      - name: Instalar dependencias y ejecutar notebook ${{ matrix.notebook }}
         shell: bash -l {0}
         run: |
           conda install -y pip papermill ipykernel pandas numpy scikit-learn yfinance ta-lib
           pip install backtesting
           python -m ipykernel install --user --name python3
-          mkdir -p data data/backtesting
-
-      - name: Ejecutar notebook ${{ matrix.notebook.name }}
-        shell: bash -l {0}
-        run: |
-          papermill ${{ matrix.notebook.file }} ${{ matrix.notebook.name }}_out.ipynb -k python3
-
-      - name: Verificar cambios en ${{ matrix.notebook.name }}, trades_${{ matrix.notebook.name }}  estadisticas_${{ matrix.notebook.name }}
+          # Ejecuta el notebook y deja el output en *_out.ipynb
+          infile="${{ matrix.notebook }}"
+          outfile="${infile%.ipynb}_out.ipynb"
+          papermill "$infile" "$outfile" -k python3
+      - name: Mostrar diff de cambios
         shell: bash
         run: |
-          echo "=== Listado de archivos generados ==="
-          ls -l \
-            data/${{ matrix.notebook.name }}_h.txt \
-            data/backtesting/trades_${{ matrix.notebook.name }}.* \
-            data/backtesting/estadisticas_${{ matrix.notebook.name }}.* || true
           echo "=== git status ==="
-          git status --short \
-            data/${{ matrix.notebook.name }}_h.txt \
-            data/backtesting/trades_${{ matrix.notebook.name }}.* \
-            data/backtesting/estadisticas_${{ matrix.notebook.name }}.*
+          git status
           echo
-          echo "=== diff ${{ matrix.notebook.name }}==="
-          git diff -- data/${{ matrix.notebook.name }}_h.txt || echo "  (sin cambios en ${{ matrix.notebook.name }}_h.txt)"
+          echo "=== git diff --stat ==="
+          git diff --stat
           echo
-          echo "=== diff trades_${{ matrix.notebook.name }} ==="
-          git diff -- data/backtesting/trades_${{ matrix.notebook.name }}.txt || echo "  (sin cambios en trades_${{ matrix.notebook.name }}.txt)"
-          echo
-          echo "=== diff estadisticas_${{ matrix.notebook.name }} ==="
-          git diff -- data/backtesting/estadisticas_${{ matrix.notebook.name }}.txt || echo "  (sin cambios en estadisticas_${{ matrix.notebook.name }}.txt)"
+          echo "=== git diff completo (líneas removidas [+] y añadidas [-]) ==="
+          git diff
 
-      - name: Upload outputs artefact
-        uses: actions/upload-artifact@v4
-        with:
-          name: salida-${{ matrix.notebook.name }}
-          path: |
-            data/${{ matrix.notebook.name }}_h.txt
-            data/backtesting/trades_${{ matrix.notebook.name }}.*
-            data/backtesting/estadisticas_${{ matrix.notebook.name }}.*
+      - name: Commit & Push outputs
+        if: success()
+        shell: bash
+        run: |
+          git config user.name  "kaliinversionesyservicios"
+          git config user.email "kaliinversionesyservicios@gmail.com"
 
-  push_outputs:
-      needs: run_notebooks
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout repo
-          uses: actions/checkout@v4
-          with:
-            token: ${{ secrets.GITHUB_TOKEN }}
-            persist-credentials: true
-            fetch-depth: 0
-            ref: main
-
-        #- name: Download artefact pm40
-        #  uses: actions/download-artifact@v4
-        #  with:
-        #    name: salida-pm40
-        #    path: tmp/pm40
-
-        - name: Download artefact cb
-          uses: actions/download-artifact@v4
-          with:
-            name: salida-cb
-            path: tmp/cb
-
-        #- name: Download artefact cncf
-        #  uses: actions/download-artifact@v4
-        #  with:
-        #    name: salida-cncf
-        #    path: tmp/cncf
-
-        - name: Download artefact pfuerte
-          uses: actions/download-artifact@v4
-          with:
-            name: salida-pfuerte
-            path: tmp/pfuerte
-
-        #- name: Download artefact pga
-        #  uses: actions/download-artifact@v4
-        #  with:
-        #    name: salida-pga
-        #    path: tmp/pga
-        
-        - name: Download artefact cba
-          uses: actions/download-artifact@v4
-          with:
-            name: salida-cba
-            path: tmp/cba
-
-        - name: DEBUG Listar contenido de tmp/${{ matrix.notebook.name }}
-          shell: bash
-          run: |
-            echo "===== Contenido de tmp/${{ matrix.notebook.name }} ====="
-            find tmp/${{ matrix.notebook.name }} -type f | sed 's|tmp/${{ matrix.notebook.name }}/||'
-        
-        - name: Copy outputs into data/
-          shell: bash
-          run: |
-            mkdir -p data data/backtesting
-            # PM40
-            #cp tmp/pm40/pm40_h.txt           data/pm40_h.txt
-            #cp tmp/pm40/backtesting/*_pm40.*    data/backtesting/
-
-            #cb- canal bajista
-            cp tmp/cb/cb_h.txt               data/cb_h.txt
-            cp tmp/cb/backtesting/*_cb.*   data/backtesting/
-
-            #CNCF - Caida Normal Caida Fuerte
-            #cp tmp/cncf/cncf_h.txt               data/cncf_h.txt
-            #cp tmp/cncf/backtesting/*_cncf.*   data/backtesting/
-
-            #PFUERTE - Piso Fuerte
-            cp tmp/pfuerte/pfuerte_h.txt               data/pfuerte_h.txt
-            cp tmp/pfuerte/backtesting/*_pfuerte.*   data/backtesting/
-
-            #PGA - Primer Gap a la Alzaa
-            #cp tmp/pga/pga_h.txt               data/pga_h.txt
-            #cp tmp/pga/backtesting/*_pga.*   data/backtesting/
-
-            #CBA - Caida Bajista Alcista
-            cp tmp/cba/cba_h.txt               data/cba_h.txt
-            cp tmp/cba/backtesting/*_cba.*   data/backtesting/
-
-        - name: Commit & Push outputs
-          shell: bash
-          run: |
-            git config user.name "kaliinversionesyservicios"
-            git config user.email "kaliinversionesyservicios@gmail.com"
+          for intento in {1..5}; do
+            git pull --rebase --autostash
             git add .
-            git diff --cached --quiet || git commit -m "🔄 Agrega outputs ${{ matrix.notebook.name }}"
-            git push origin main
+            # Si no hay cambios, salimos
+            git diff --cached --quiet && { echo "⚠️ No hay cambios para commitear."; exit 0; }
+            git commit -m "🔄 Resultados ${{ matrix.notebook }}"
+            if git push origin main; then
+              echo "✅ Push exitoso en intento $intento"
+              break
+            else
+              echo "❌ Push falló en intento $intento, reintentando…"
+              sleep $((2**intento))
+            fi
+          done
